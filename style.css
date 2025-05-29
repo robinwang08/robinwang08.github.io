@@ -4,6 +4,19 @@ body {
   background: #f4f4f4;
 }
 
+h1 {
+  margin-bottom: 20px;
+}
+
+/* Layout container for calendar + dropdown */
+.calendar-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+/* Calendar styling */
 .calendar {
   width: 320px;
   background: white;
@@ -50,4 +63,22 @@ body {
 .today {
   border: 2px solid #007bff;
   font-weight: bold;
+}
+
+/* Dropdown styling */
+.shift-dropdown {
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shift-dropdown label {
+  font-weight: bold;
+}
+
+.shift-dropdown select {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
