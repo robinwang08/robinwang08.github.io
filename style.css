@@ -173,6 +173,15 @@ h2 {
   transition: background-color 0.3s ease;
 }
 
+/* Styling for the caption below the Generate Email button */
+.email-caption {
+  font-size: 0.85em; /* Make the text a bit smaller */
+  color: #555; /* Grey color for less emphasis */
+  text-align: center; /* Center the text under the button */
+  margin-top: 8px; /* Add a little space above the caption */
+  margin-bottom: 20px; /* Space below the caption before the display area */
+}
+
 #generateEmailButton:hover {
   background-color: #218838;
 }
