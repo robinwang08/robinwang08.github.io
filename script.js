@@ -224,7 +224,7 @@ function updateDisplay() {
       <strong>• Employment:</strong> Hospital employee<br>
       <strong>• Date of coverage:</strong> ${selectedDate.toDateString()}<br>
       <strong>• Time period covered:</strong> ${timePeriod1}<br>
-      <strong>• Site (ex. Sherman, SMOC, 500P, CCSB, 300P AM):</strong> ${site1}<br>
+      <strong>• Site:</strong> ${site1}<br>
       <strong>• Modality(s):</strong> CT/MR<br>
       <strong>• Total hours:</strong> ${totalHours1}
     `; //
@@ -239,7 +239,7 @@ function updateDisplay() {
       <strong>• Employment:</strong> Hospital employee<br>
       <strong>• Date of coverage:</strong> ${selectedDate.toDateString()}<br>
       <strong>• Time period covered:</strong> ${timePeriod2}<br>
-      <strong>• Site (ex. Sherman, SMOC, 500P, CCSB, 300P AM):</strong> ${site2}<br>
+      <strong>• Site:</strong> ${site2}<br>
       <strong>• Modality(s):</strong> CT/MR<br>
       <strong>• Total hours:</strong> ${totalHours2}
     `; //
@@ -255,7 +255,7 @@ function updateDisplay() {
       <strong>• Employment:</strong> Hospital employee<br>
       <strong>• Date of coverage:</strong> ${selectedDate.toDateString()}<br>
       <strong>• Time period covered:</strong> ${shiftTime}<br>
-      <strong>• Site (ex. Sherman, SMOC, 500P, CCSB, 300P AM):</strong> ${displayShiftTypeText}<br>
+      <strong>• Site:</strong> ${displayShiftTypeText}<br>
       <strong>• Modality(s):</strong> CT/MR<br>
       <strong>• Total hours:</strong> ${totalHours}
     `; //
@@ -295,12 +295,25 @@ function convertHtmlToPlainText(htmlString) {
 }
 
 function openOutlookEmail(recipient, subject, body) {
-  const owaUrlBase = "https://outlook.office.com/mail/deeplink/compose";
   const encodedRecipient = encodeURIComponent(recipient);
   const encodedSubject = encodeURIComponent(subject);
   const encodedBody = encodeURIComponent(body);
-  const owaLink = `${owaUrlBase}?to=${encodedRecipient}&subject=${encodedSubject}&body=${encodedBody}`;
-  window.open(owaLink, '_blank');
+
+  if (isMobileDevice()) {
+    // Attempt to open Outlook mobile app
+    const outlookAppUrl = `ms-outlook://compose?to=${encodedRecipient}&subject=${encodedSubject}&body=${encodedBody}`;
+    
+    // Using window.location.href to attempt to launch the app.
+    // If the Outlook app is not installed, the browser will likely show an error
+    // or fail to open the link. A seamless fallback without user seeing an error
+    // is very difficult to achieve reliably from client-side web JavaScript.
+    window.location.href = outlookAppUrl; 
+  } else {
+    // Open Outlook Web App for desktop users
+    const owaUrlBase = "https://outlook.office.com/mail/deeplink/compose";
+    const owaLink = `${owaUrlBase}?to=${encodedRecipient}&subject=${encodedSubject}&body=${encodedBody}`;
+    window.open(owaLink, '_blank');
+  }
 }
 
 // --- MODIFIED generateEmail FUNCTION ---
@@ -339,7 +352,7 @@ function generateEmail() {
       <strong>• Employment:</strong> Hospital employee<br>
       <strong>• Date of coverage:</strong> ${formattedDate}<br>
       <strong>• Time period covered:</strong> ${timePeriod1}<br>
-      <strong>• Site (ex. Sherman, SMOC, 500P, CCSB, 300P AM):</strong> ${site1}<br>
+      <strong>• Site:</strong> ${site1}<br>
       <strong>• Modality(s):</strong> CT/MR<br>
       <strong>• Total hours:</strong> ${totalHours1}
     `; //
@@ -359,7 +372,7 @@ function generateEmail() {
       <strong>• Employment:</strong> Hospital employee<br>
       <strong>• Date of coverage:</strong> ${formattedDate}<br>
       <strong>• Time period covered:</strong> ${timePeriod2}<br>
-      <strong>• Site (ex. Sherman, SMOC, 500P, CCSB, 300P AM):</strong> ${site2}<br>
+      <strong>• Site:</strong> ${site2}<br>
       <strong>• Modality(s):</strong> CT/MR<br>
       <strong>• Total hours:</strong> ${totalHours2}
     `; //
@@ -376,4 +389,14 @@ function generateEmail() {
     const recipientGeneric = "SHC-RAD-Inject-Shift@stanfordhealthcare.org"; //
     openOutlookEmail(recipientGeneric, subjectGeneric, bodyPlain);
   }
+}
+
+
+function isMobileDevice() {
+  let check = false;
+  // Common user agent string checks for mobile devices
+  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+    check = true;
+  }
+  return check;
 }
