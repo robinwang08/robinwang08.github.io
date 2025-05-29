@@ -2,7 +2,8 @@ let currentDate = new Date();
 let selectedDate = null;
 
 const shiftTimes = {
-  "Weeknight 300P": "5:00 PM - 11:00 PM",
+  "Weeknight 300P/500P": "5:00 PM - 11:00 PM",
+  "Weeknight Hoover": "5:30 PM - 11:00 PM",
   "Weeknight AMC/BW": "5:30 PM - 11:00 PM",
   "Weeknight LPCH": "5:30 PM - 11:00 PM",
   "Weeknight PAIC": "5:30 PM - 11:00 PM",
