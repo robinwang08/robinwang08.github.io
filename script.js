@@ -4,6 +4,7 @@ let selectedDate = null;
 function renderCalendar(date) {
   const monthYear = document.getElementById("monthYear");
   const calendarDates = document.getElementById("calendarDates");
+  const selectedDisplay = document.getElementById("selectedDateDisplay");
 
   const year = date.getFullYear();
   const month = date.getMonth();
@@ -13,6 +14,9 @@ function renderCalendar(date) {
 
   monthYear.textContent = `${date.toLocaleString('default', { month: 'long' })} ${year}`;
   calendarDates.innerHTML = "";
+
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
 
   // Blank starting cells
   for (let i = 0; i < firstDay; i++) {
@@ -25,18 +29,34 @@ function renderCalendar(date) {
     const dayCell = document.createElement("div");
     dayCell.textContent = day;
 
-    dayCell.addEventListener("click", () => {
-      const previouslySelected = document.querySelector(".calendar-dates .selected");
-      if (previouslySelected) {
-        previouslySelected.classList.remove("selected");
-      }
+    // Highlight today
+    if (isCurrentMonth && today.getDate() === day) {
+      dayCell.classList.add("today");
+    }
+
+    // Mark selected
+    if (
+      selectedDate &&
+      selectedDate.getDate() === day &&
+      selectedDate.getMonth() === month &&
+      selectedDate.getFullYear() === year
+    ) {
       dayCell.classList.add("selected");
+    }
+
+    dayCell.addEventListener("click", () => {
       selectedDate = new Date(year, month, day);
-      console.log("Selected date:", selectedDate.toDateString());
+      selectedDisplay.textContent = `Selected date: ${selectedDate.toDateString()}`;
+      renderCalendar(date); // Re-render to apply selected styling
     });
 
     calendarDates.appendChild(dayCell);
   }
+
+  // Show selected date
+  selectedDisplay.textContent = selectedDate
+    ? `Selected date: ${selectedDate.toDateString()}`
+    : "";
 }
 
 function prevMonth() {
