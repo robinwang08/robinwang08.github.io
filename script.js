@@ -10,40 +10,58 @@ const shiftTimes = {
   "Weeknight CCSB": "5:00 PM - 11:00 PM",
   "Weekend 300P/500P AM": "7:00 AM - 3:00 PM",
   "Weekend 300P/LPCH PM": "3:00 PM - 11:00 PM",
+  "Weekend 500P PM": "3:00 PM - 11:00 PM",
+  "Weekend LPCH": "7:30 AM - 5:00 PM",
   "Weekend BW AM": "7:00 AM - 1:00 PM",
   "Weekend BW PM": "1:00 PM - 7:00 PM",
   "Weekend SMOC AM": "7:00 AM - 1:00 PM",
   "Weekend SMOC PM": "1:00 PM - 7:00 PM",
-  "Weekend CCSB": "7:00 AM - 3:00 PM",
-  "Weekend Hoover": "7:00 AM - 3:00 PM",
   "Weekend PAIC AM": "7:00 AM - 1:00 PM",
   "Weekend PAIC PM": "1:00 PM - 7:00 PM",
-  "Weekend 500P PM": "3:00 PM - 11:00 PM"
+  "Weekend CCSB": "7:00 AM - 3:00 PM",
+  "Weekend Hoover": "7:00 AM - 3:00 PM"
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-const nameInput = document.getElementById("userName");
-const pagerInput = document.getElementById("pager");
+  const nameInput = document.getElementById("userName");
+  const pagerInput = document.getElementById("pager");
+  const weeknightShiftDropdown = document.getElementById("weeknightShiftType");
+  const weekendShiftDropdown = document.getElementById("weekendShiftType");
 
-nameInput.value = getCookie("userName");
-pagerInput.value = getCookie("pager");
+  nameInput.value = getCookie("userName");
+  pagerInput.value = getCookie("pager");
 
-nameInput.addEventListener("input", () => {
-  setCookie("userName", nameInput.value);
-  updateDisplay();
-});
+  populateShiftDropdowns();
 
-pagerInput.addEventListener("input", () => {
-  setCookie("pager", pagerInput.value);
-  updateDisplay();
-});
+  nameInput.addEventListener("input", () => {
+    setCookie("userName", nameInput.value);
+    updateDisplay();
+  });
 
-  document.getElementById("shiftType").addEventListener("change", updateDisplay);
+  pagerInput.addEventListener("input", () => {
+    setCookie("pager", pagerInput.value);
+    updateDisplay();
+  });
+
+  weeknightShiftDropdown.addEventListener("change", () => {
+    if (weeknightShiftDropdown.value) {
+      weekendShiftDropdown.value = ""; // Clear the other dropdown
+    }
+    updateDisplay();
+  });
+
+  weekendShiftDropdown.addEventListener("change", () => {
+    if (weekendShiftDropdown.value) {
+      weeknightShiftDropdown.value = ""; // Clear the other dropdown
+    }
+    updateDisplay();
+  });
+
   renderCalendar(currentDate);
 });
 
 function setCookie(name, value, days = 365) {
-  const expires = new Date(Date.now() + days*24*60*60*1000).toUTCString();
+  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
   document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
 }
 
@@ -56,6 +74,29 @@ function getCookie(name) {
   return "";
 }
 
+function populateShiftDropdowns() {
+  const weeknightDropdown = document.getElementById("weeknightShiftType");
+  const weekendDropdown = document.getElementById("weekendShiftType");
+
+  // Clear existing options except the first placeholder
+  weeknightDropdown.length = 1;
+  weekendDropdown.length = 1;
+
+  for (const key in shiftTimes) {
+    if (shiftTimes.hasOwnProperty(key)) {
+      const option = document.createElement("option");
+      option.value = key; // Store the full key as the value
+
+      if (key.startsWith("Weeknight ")) {
+        option.text = key.substring("Weeknight ".length);
+        weeknightDropdown.appendChild(option);
+      } else if (key.startsWith("Weekend ")) {
+        option.text = key.substring("Weekend ".length);
+        weekendDropdown.appendChild(option);
+      }
+    }
+  }
+}
 
 function renderCalendar(date) {
   const monthYear = document.getElementById("monthYear");
@@ -82,7 +123,7 @@ function renderCalendar(date) {
     const dayCell = document.createElement("div");
     dayCell.textContent = day;
 
-    if (isCurrentMonth && today.getDate() === day) {
+    if (isCurrentMonth && today.getDate() === day && today.getFullYear() === year && today.getMonth() === month) {
       dayCell.classList.add("today");
     }
 
@@ -98,13 +139,12 @@ function renderCalendar(date) {
     dayCell.addEventListener("click", () => {
       selectedDate = new Date(year, month, day);
       updateDisplay();
-      renderCalendar(date);
+      renderCalendar(date); // Re-render to show selection
     });
 
     calendarDates.appendChild(dayCell);
   }
-
-  updateDisplay();
+  updateDisplay(); // Initial update in case a date is already selected
 }
 
 function prevMonth() {
@@ -129,7 +169,7 @@ function calculateTotalHours(timeStr) {
     const meridian = match[3].toUpperCase();
 
     if (meridian === "PM" && hour !== 12) hour += 12;
-    if (meridian === "AM" && hour === 12) hour = 0;
+    if (meridian === "AM" && hour === 12) hour = 0; // Midnight case
 
     return hour + minute / 60;
   };
@@ -139,37 +179,87 @@ function calculateTotalHours(timeStr) {
 
   if (startHour === null || endHour === null) return "";
 
-  // Handle cases where the end time is past midnight
-  const adjustedEnd = endHour < startHour ? endHour + 24 : endHour;
-
-  return (adjustedEnd - startHour).toFixed(1);
+  let duration = endHour - startHour;
+  if (duration < 0) { // Handles overnight shifts
+    duration += 24;
+  }
+  return duration.toFixed(1);
 }
-
 
 function updateDisplay() {
   const name = document.getElementById("userName").value || "N/A";
   const pager = document.getElementById("pager").value || "N/A";
   const display = document.getElementById("selectedDateDisplay");
-  const shiftType = document.getElementById("shiftType").value;
-  const shiftTime = shiftTimes[shiftType] || "";
-  const totalHours = shiftTime ? calculateTotalHours(shiftTime) : "";
+
+  const weeknightDropdown = document.getElementById("weeknightShiftType");
+  const weekendDropdown = document.getElementById("weekendShiftType");
+
+  let shiftType = ""; // Full key for shiftTimes, e.g., "Weeknight 300P"
+  let displayShiftTypeText = ""; // Text for display, e.g., "300P"
+
+  if (weeknightDropdown.value) {
+    shiftType = weeknightDropdown.value;
+    displayShiftTypeText = weeknightDropdown.options[weeknightDropdown.selectedIndex].text;
+  } else if (weekendDropdown.value) {
+    shiftType = weekendDropdown.value;
+    displayShiftTypeText = weekendDropdown.options[weekendDropdown.selectedIndex].text;
+  }
 
   if (!selectedDate || !shiftType) {
     display.innerHTML = "";
     return;
   }
 
-  const message = `
-    <strong>Name:</strong> ${name}<br>
-    <strong>• Pager:</strong> ${pager}<br>
-    <strong>• Position:</strong> Resident<br>
-    <strong>• Employment:</strong> Hospital employee<br>
-    <strong>• Date of coverage:</strong> ${selectedDate.toDateString()}<br>
-    <strong>• Time period covered:</strong> ${shiftTime}<br>
-    <strong>• Site (ex. Sherman, SMOC, 500P, CCSB, 300P AM):</strong> ${shiftType}<br>
-    <strong>• Modality(s):</strong> CT/MR<br>
-    <strong>• Total hours:</strong> ${totalHours}
-  `;
+  // Special handling for "Weekend 300P/LPCH PM" on a Sunday
+  if (shiftType === "Weekend 300P/LPCH PM" && selectedDate.getDay() === 0) { // 0 is Sunday
+    // Message 1
+    const timePeriod1 = "3:00 PM - 5:00 PM";
+    const site1 = "300P PM";
+    const totalHours1 = calculateTotalHours(timePeriod1);
+    const message1 = `
+      <strong>Name:</strong> ${name}<br>
+      <strong>• Pager:</strong> ${pager}<br>
+      <strong>• Position:</strong> Resident<br>
+      <strong>• Employment:</strong> Hospital employee<br>
+      <strong>• Date of coverage:</strong> ${selectedDate.toDateString()}<br>
+      <strong>• Time period covered:</strong> ${timePeriod1}<br>
+      <strong>• Site (ex. Sherman, SMOC, 500P, CCSB, 300P AM):</strong> ${site1}<br>
+      <strong>• Modality(s):</strong> CT/MR<br>
+      <strong>• Total hours:</strong> ${totalHours1}
+    `;
 
-  display.innerHTML = message;
+    // Message 2
+    const timePeriod2 = "5:00 PM - 11:00 PM";
+    const site2 = displayShiftTypeText; // Uses "300P/LPCH PM"
+    const totalHours2 = calculateTotalHours(timePeriod2);
+    const message2 = `
+      <strong>Name:</strong> ${name}<br>
+      <strong>• Pager:</strong> ${pager}<br>
+      <strong>• Position:</strong> Resident<br>
+      <strong>• Employment:</strong> Hospital employee<br>
+      <strong>• Date of coverage:</strong> ${selectedDate.toDateString()}<br>
+      <strong>• Time period covered:</strong> ${timePeriod2}<br>
+      <strong>• Site (ex. Sherman, SMOC, 500P, CCSB, 300P AM):</strong> ${site2}<br>
+      <strong>• Modality(s):</strong> CT/MR<br>
+      <strong>• Total hours:</strong> ${totalHours2}
+    `;
+    display.innerHTML = message1 + "<br><hr style='margin: 15px 0;'><br>" + message2;
+  } else {
+    // Regular message display
+    const shiftTime = shiftTimes[shiftType] || "";
+    const totalHours = shiftTime ? calculateTotalHours(shiftTime) : "";
+
+    const message = `
+      <strong>Name:</strong> ${name}<br>
+      <strong>• Pager:</strong> ${pager}<br>
+      <strong>• Position:</strong> Resident<br>
+      <strong>• Employment:</strong> Hospital employee<br>
+      <strong>• Date of coverage:</strong> ${selectedDate.toDateString()}<br>
+      <strong>• Time period covered:</strong> ${shiftTime}<br>
+      <strong>• Site (ex. Sherman, SMOC, 500P, CCSB, 300P AM):</strong> ${displayShiftTypeText}<br>
+      <strong>• Modality(s):</strong> CT/MR<br>
+      <strong>• Total hours:</strong> ${totalHours}
+    `;
+    display.innerHTML = message;
+  }
 }

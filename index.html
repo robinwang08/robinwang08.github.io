@@ -16,10 +16,9 @@
   <input type="text" id="pager" placeholder="Enter your pager">
 </div>
 
-  <h1>My Calendar</h1>
+  <h2>Select Date</h2>
 
   <div class="calendar-wrapper">
-    <!-- Calendar -->
     <div class="calendar">
       <div class="calendar-header">
         <button onclick="prevMonth()">&#8592;</button>
@@ -32,29 +31,20 @@
       <div class="calendar-dates" id="calendarDates"></div>
     </div>
 
-    <!-- Shift Dropdown -->
-    <div class="shift-dropdown">
-      <label for="shiftType">Shift Type:</label>
-      <select id="shiftType">
-        <option value="">-- Select Shift --</option>
-        <option>Weeknight 300P</option>
-        <option>Weeknight AMC/BW</option>
-        <option>Weeknight LPCH</option>
-        <option>Weeknight PAIC</option>
-        <option>Weeknight SMOC</option>
-        <option>Weeknight CCSB</option>
-        <option>Weekend 300P/500P AM</option>
-        <option>Weekend 300P/LPCH PM</option>
-        <option>Weekend BW AM</option>
-        <option>Weekend BW PM</option>
-        <option>Weekend SMOC AM</option>
-        <option>Weekend SMOC PM</option>
-        <option>Weekend CCSB</option>
-        <option>Weekend Hoover</option>
-        <option>Weekend PAIC AM</option>
-        <option>Weekend PAIC PM</option>
-        <option>Weekend 500P PM</option>
-      </select>
+    <div class="shift-dropdowns-container" style="display: flex; flex-direction: column; gap: 15px;">
+      <div class="shift-dropdown">
+        <label for="weeknightShiftType">Weeknight Shift:</label>
+        <select id="weeknightShiftType">
+          <option value="">-- Select Weeknight Shift --</option>
+        </select>
+      </div>
+
+      <div class="shift-dropdown">
+        <label for="weekendShiftType">Weekend/Holiday Shift:</label>
+        <select id="weekendShiftType">
+          <option value="">-- Select Weekend/Holiday Shift --</option>
+        </select>
+      </div>
     </div>
   </div>
 
